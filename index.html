@@ -12,22 +12,24 @@
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
         .modal-active { overflow: hidden; }
+        /* ซ่อนส่วนแสดงผลข้อมูลไว้ก่อนจนกว่าจะโหลดเสร็จ */
+        #dataWrapper { display: none; }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-800 flex flex-col min-h-screen">
 
     <!-- Navbar -->
     <nav class="bg-blue-600 text-white shadow-md">
         <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <h1 class="text-xl font-semibold"><i class="fas fa-file-invoice-dollar mr-2"></i> ระบบรายงานค่าคอมมิชชั่น</h1>
-            <button onclick="loadData()" class="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors flex items-center">
-                <i class="fas fa-sync-alt mr-2" id="refresh-icon"></i> รีเฟรชข้อมูล
+            <button onclick="loadData()" class="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors flex items-center shadow-sm">
+                <i class="fas fa-sync-alt mr-2" id="refresh-icon"></i> รีเฟรช
             </button>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-8">
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
         
         <!-- Search and Filter -->
         <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col sm:flex-row gap-4">
@@ -36,45 +38,50 @@
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                         <i class="fas fa-search"></i>
                     </span>
-                    <input type="text" id="searchInput" onkeyup="filterData()" placeholder="ค้นหาชื่อ, รหัสพนักงาน หรือเดือน..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="searchInput" onkeyup="filterData()" placeholder="ค้นหาจากเดือน/ปี..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
             </div>
         </div>
 
         <!-- Loading State -->
-        <div id="loading" class="text-center py-10 hidden">
+        <div id="loading" class="text-center py-10 bg-white rounded-xl shadow-sm">
             <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-3"></i>
-            <p class="text-gray-500">กำลังโหลดข้อมูลจากระบบ...</p>
+            <p class="text-gray-500 font-medium">กำลังโหลดข้อมูลจาก Google Sheets...</p>
         </div>
 
-        <!-- Data Table (Desktop & Tablet) / Cards (Mobile) -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden hidden md:block">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-50 border-b">
-                        <th class="py-4 px-6 font-medium text-gray-600">รหัสพนักงาน</th>
-                        <th class="py-4 px-6 font-medium text-gray-600">ชื่อ-นามสกุล</th>
-                        <th class="py-4 px-6 font-medium text-gray-600">เดือน/ปี</th>
-                        <th class="py-4 px-6 font-medium text-gray-600 text-right">ยอดคอมมิชชั่น</th>
-                        <th class="py-4 px-6 font-medium text-gray-600 text-center">จัดการไฟล์ PDF</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTableBody">
-                    <!-- Data will be injected here -->
-                </tbody>
-            </table>
-        </div>
+        <div id="dataWrapper">
+            <!-- Data Table (Desktop & Tablet) -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden hidden md:block border border-gray-100 mb-4">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-blue-50 border-b border-blue-100">
+                            <th class="py-4 px-6 font-semibold text-blue-800">เดือน/ปี</th>
+                            <th class="py-4 px-6 font-semibold text-blue-800 text-right">ยอดคอมมิชชั่น</th>
+                            <th class="py-4 px-6 font-semibold text-blue-800 text-center">จัดการไฟล์ PDF</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Mobile Card View -->
-        <div id="mobileDataContainer" class="md:hidden space-y-4">
-            <!-- Data will be injected here -->
+            <!-- Mobile Card View -->
+            <div id="mobileDataContainer" class="md:hidden space-y-4">
+                <!-- Data will be injected here -->
+            </div>
         </div>
 
         <!-- Empty State -->
-        <div id="emptyState" class="text-center py-16 hidden bg-white rounded-xl shadow-sm">
+        <div id="emptyState" class="text-center py-16 hidden bg-white rounded-xl shadow-sm border border-gray-100">
             <div class="text-gray-300 mb-4"><i class="fas fa-folder-open text-6xl"></i></div>
             <h3 class="text-lg font-medium text-gray-700">ไม่พบข้อมูล</h3>
-            <p class="text-gray-500 mt-1">ยังไม่มีข้อมูลรายงานค่าคอมมิชชั่นในขณะนี้</p>
+            <p class="text-gray-500 mt-1 text-sm">ไม่พบข้อมูลในระบบ</p>
+        </div>
+
+        <!-- Debug Info -->
+        <div id="debugInfo" class="text-xs text-gray-400 mt-8 text-center font-mono">
+            สถานะ: กำลังรอโหลดข้อมูล...
         </div>
 
     </main>
@@ -108,15 +115,12 @@
     </div>
 
     <script>
-        let globalData = [];
+        // ==========================================
+        // 1. ใส่ URL Web App ของ Google Apps Script ที่นี่
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxKhANveyUapSx0DxuProGEpShkTUQlemmtr2r8mMTNCzI6kO2qMi88LUdNdm8jrZ1m/exec"; 
 
-        // Mock data for display in this environment (Canvas)
-        const mockData = [
-            { "EmpID": "EMP-001", "Name": "สมชาย ใจดี", "Month": "มกราคม 2026", "Amount": "15,000", "PDF_Link": "https://drive.google.com/file/d/1X9b0O5n8Z2y_EXAMPLE_ID/view" },
-            { "EmpID": "EMP-002", "Name": "สมหญิง รักงาน", "Month": "มกราคม 2026", "Amount": "22,500", "PDF_Link": "https://drive.google.com/file/d/1X9b0O5n8Z2y_EXAMPLE_ID/view" },
-            { "EmpID": "EMP-003", "Name": "วิชัย เก่งกล้า", "Month": "มกราคม 2026", "Amount": "8,200", "PDF_Link": "https://drive.google.com/file/d/1X9b0O5n8Z2y_EXAMPLE_ID/view" },
-            { "EmpID": "EMP-001", "Name": "สมชาย ใจดี", "Month": "กุมภาพันธ์ 2026", "Amount": "18,400", "PDF_Link": "https://drive.google.com/file/d/1X9b0O5n8Z2y_EXAMPLE_ID/view" }
-        ];
+        let globalData = [];
 
         // Utility to extract Drive File ID and generate correct links
         function processDriveLink(url) {
@@ -133,64 +137,96 @@
             return { preview: url, download: url }; // Fallback
         }
 
-        // Load data from Google Apps Script
-        function loadData() {
-            showLoading(true);
-            const icon = document.getElementById('refresh-icon');
-            icon.classList.add('fa-spin');
+        // Load data using Fetch API
+        async function loadData() {
+            try {
+                document.getElementById('debugInfo').innerText = "สถานะ: เริ่มต้นฟังก์ชัน loadData()...";
+                
+                showLoading(true);
+                const icon = document.getElementById('refresh-icon');
+                if (icon) icon.classList.add('fa-spin');
 
-            // Check if running in Google Apps Script environment
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run
-                    .withSuccessHandler(function(data) {
-                        globalData = data;
-                        renderData(globalData);
-                        showLoading(false);
-                        icon.classList.remove('fa-spin');
-                    })
-                    .withFailureHandler(function(error) {
-                        console.error(error);
-                        showLoading(false);
-                        icon.classList.remove('fa-spin');
-                        // Show error message (replacing alert)
-                        const emptyState = document.getElementById('emptyState');
-                        emptyState.innerHTML = `<div class="text-red-500 mb-4"><i class="fas fa-exclamation-triangle text-6xl"></i></div><h3 class="text-lg font-medium text-gray-700">เกิดข้อผิดพลาด</h3><p class="text-gray-500 mt-1">ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง</p>`;
-                        emptyState.classList.remove('hidden');
-                    })
-                    .getCommissionData();
-            } else {
-                // Fallback for canvas preview
-                setTimeout(() => {
-                    globalData = mockData;
-                    renderData(globalData);
-                    showLoading(false);
-                    icon.classList.remove('fa-spin');
-                }, 800);
+                // แจ้งเตือนหากยังไม่ได้เปลี่ยน API_URL
+                if (API_URL === "ใส่_URL_WEB_APP_ที่นี่" || API_URL.trim() === "") {
+                    throw new Error("โปรดแก้ไขไฟล์ HTML เพื่อใส่ URL ของ Web App ในตัวแปร API_URL ก่อนใช้งาน (บรรทัดที่ 146)");
+                }
+                
+                document.getElementById('debugInfo').innerText = "สถานะ: กำลังร้องขอข้อมูลจาก API...";
+
+                // ทำการดึงข้อมูลจาก Google Apps Script
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                // แปลงข้อมูลเป็น JSON
+                const result = await response.json();
+
+                // ตรวจสอบว่ามี Error จากฝั่ง Apps Script หรือไม่
+                if (result.status === 'error') {
+                    throw new Error(result.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+                }
+
+                const data = result.data || [];
+                const dataCount = data ? data.length : 0;
+                document.getElementById('debugInfo').innerText = `สถานะ: ดึงข้อมูลสำเร็จ, พบข้อมูล ${dataCount} แถว`;
+                
+                globalData = data;
+                renderData(globalData);
+                
+                showLoading(false);
+                if (icon) icon.classList.remove('fa-spin');
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                const icon = document.getElementById('refresh-icon');
+                if (icon) icon.classList.remove('fa-spin');
+                document.getElementById('debugInfo').innerText = `สถานะ: Error - ${error.message}`;
+                showErrorState(error.message || 'ไม่สามารถดึงข้อมูลจาก API ได้');
             }
         }
 
         function showLoading(isLoading) {
-            document.getElementById('loading').style.display = isLoading ? 'block' : 'none';
-            document.getElementById('dataTableBody').innerHTML = '';
-            document.getElementById('mobileDataContainer').innerHTML = '';
-            document.getElementById('emptyState').classList.add('hidden');
+            const loadingEl = document.getElementById('loading');
+            const dataWrapper = document.getElementById('dataWrapper');
+            const emptyState = document.getElementById('emptyState');
+
+            if (isLoading) {
+                loadingEl.style.display = 'block';
+                dataWrapper.style.display = 'none';
+                emptyState.classList.add('hidden');
+            } else {
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        function showErrorState(msg) {
+            showLoading(false);
+            const emptyState = document.getElementById('emptyState');
+            emptyState.innerHTML = `<div class="text-red-500 mb-4"><i class="fas fa-exclamation-triangle text-6xl"></i></div><h3 class="text-lg font-medium text-gray-700">เกิดข้อผิดพลาด</h3><p class="text-gray-500 mt-1">${msg}</p>`;
+            emptyState.classList.remove('hidden');
         }
 
         function renderData(data) {
             const tbody = document.getElementById('dataTableBody');
             const mobileContainer = document.getElementById('mobileDataContainer');
+            const dataWrapper = document.getElementById('dataWrapper');
+            const emptyState = document.getElementById('emptyState');
             
+            // Clear existing
             tbody.innerHTML = '';
             mobileContainer.innerHTML = '';
 
-            if (data.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-                document.querySelector('table').parentElement.classList.add('hidden');
+            // Guard against null/empty
+            if (!data || data.length === 0) {
+                emptyState.classList.remove('hidden');
+                dataWrapper.style.display = 'none';
                 return;
             }
 
-            document.getElementById('emptyState').classList.add('hidden');
-            document.querySelector('table').parentElement.classList.remove('hidden');
+            // Show table
+            emptyState.classList.add('hidden');
+            dataWrapper.style.display = 'block';
 
             data.forEach((row, index) => {
                 const links = processDriveLink(row.PDF_Link || '');
@@ -198,22 +234,20 @@
 
                 const actionButtons = hasPdf ? `
                     <div class="flex items-center justify-center gap-2">
-                        <button onclick="openPreview('${links.preview}', '${row.Name} - ${row.Month}', '${links.download}')" class="bg-blue-100 text-blue-600 hover:bg-blue-200 px-3 py-1.5 rounded-lg text-sm transition-colors">
+                        <button onclick="openPreview('${links.preview}', 'รายงานค่าคอมมิชชั่น - ${row.Month}', '${links.download}')" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
                             <i class="fas fa-eye"></i> พรีวิว
                         </button>
-                        <a href="${links.download}" target="_blank" class="bg-green-100 text-green-600 hover:bg-green-200 px-3 py-1.5 rounded-lg text-sm transition-colors">
+                        <a href="${links.download}" target="_blank" class="bg-green-100 text-green-700 hover:bg-green-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
                             <i class="fas fa-download"></i> โหลด
                         </a>
                     </div>
-                ` : `<span class="text-gray-400 text-sm">ไม่มีไฟล์</span>`;
+                ` : `<span class="text-gray-400 text-sm italic">ไม่มีไฟล์แนบ</span>`;
 
                 // Desktop Row
                 const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-blue-50 transition-colors";
+                tr.className = "border-b hover:bg-blue-50/50 transition-colors";
                 tr.innerHTML = `
-                    <td class="py-3 px-6 text-gray-700">${row.EmpID || '-'}</td>
-                    <td class="py-3 px-6 font-medium text-gray-800">${row.Name || '-'}</td>
-                    <td class="py-3 px-6 text-gray-600">${row.Month || '-'}</td>
+                    <td class="py-3 px-6 text-gray-800 font-medium">${row.Month || '-'}</td>
                     <td class="py-3 px-6 text-right font-semibold text-blue-600">฿${row.Amount || '0'}</td>
                     <td class="py-3 px-6">${actionButtons}</td>
                 `;
@@ -223,17 +257,15 @@
                 const card = document.createElement('div');
                 card.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-100";
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
+                    <div class="flex justify-between items-center mb-2">
                         <div>
-                            <span class="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded-md">${row.EmpID || '-'}</span>
-                            <h3 class="font-medium text-gray-800 mt-2">${row.Name || '-'}</h3>
+                            <h3 class="font-medium text-gray-800 text-lg">${row.Month || '-'}</h3>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs text-gray-500">${row.Month || '-'}</span>
-                            <div class="font-semibold text-blue-600 mt-1">฿${row.Amount || '0'}</div>
+                            <div class="font-semibold text-blue-600 text-lg">฿${row.Amount || '0'}</div>
                         </div>
                     </div>
-                    <div class="mt-4 pt-3 border-t border-gray-50">
+                    <div class="mt-4 pt-3 border-t border-gray-50 flex justify-start">
                         ${actionButtons.replace('justify-center', 'justify-start')}
                     </div>
                 `;
@@ -244,11 +276,8 @@
         function filterData() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = globalData.filter(row => {
-                return (
-                    (row.Name && row.Name.toLowerCase().includes(query)) ||
-                    (row.EmpID && row.EmpID.toLowerCase().includes(query)) ||
-                    (row.Month && row.Month.toLowerCase().includes(query))
-                );
+                // ค้นหาเฉพาะในช่องเดือน/ปี
+                return (row.Month && row.Month.toLowerCase().includes(query));
             });
             renderData(filtered);
         }
@@ -277,8 +306,8 @@
             if (e.target === this) closeModal();
         });
 
-        // Initial Load
-        window.onload = loadData;
+        // Initialize App
+        document.addEventListener("DOMContentLoaded", loadData);
 
     </script>
 </body>
